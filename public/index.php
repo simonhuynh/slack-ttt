@@ -14,18 +14,21 @@ When a turn is taken that ends the game, the response indicates this along with 
 QUESTIONS
 Is username unique within a channel? If no, what is the expected behavior?
 Can a user play themeselves? If so, expected behavior?
-
-
-TODO
-POST validation: 
-   https://api.slack.com/slash-commands#triggering_a_command
 */
 
 
 # COMMANDS
 define("VS_COMMAND", "vs");
 
+
 require_once '../require.php';
+
+# MINIMAL VALIDATION
+if ($_POST['token'] !== $TOKEN) {    
+    header('HTTP/1.0 404 Not Found');
+    print "404 Not Found";
+    exit();
+}
 
 header('Content-type: application/json');
 
@@ -61,7 +64,7 @@ if (!$ttt->active) {
 $board_printer->board = (($ttt->boardIsEmpty() && !$ttt->active) ? $ttt->getInstructionBoard() : $ttt->getPrintableBoard());
 $response_text = "```\xA" . $ttt->getIntro() . $board_printer->getBoard() . "\xA" . $ttt->getStatus() . "```";
 
-$response_text .= "post token is:" . $_POST['token'];
+# $response_text .= "post token is:" . $_POST['token'];
 
 $response->text = $response_text;
 
