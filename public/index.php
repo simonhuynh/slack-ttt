@@ -17,7 +17,6 @@ Can a user play themeselves? If so, expected behavior?
 
 
 TODO
-clean
 POST validation: 
    https://api.slack.com/slash-commands#triggering_a_command
 */
@@ -61,6 +60,8 @@ if (!$ttt->active) {
 
 $board_printer->board = (($ttt->boardIsEmpty() && !$ttt->active) ? $ttt->getInstructionBoard() : $ttt->getPrintableBoard());
 $response_text = "```\xA" . $ttt->getIntro() . $board_printer->getBoard() . "\xA" . $ttt->getStatus() . "```";
+
+$response_text .= "post token is:" . $_POST['token'];
 
 $response->text = $response_text;
 
