@@ -9,11 +9,4 @@ try {
 } catch (PDOException $ex) {
   echo 'Connection failed: ' . $ex->getMessage();
 }
-
-function exec_query($sqlquery, $cf="", $dbname='groups_db') {
-    $errormsg = "$cf : pdoquery_or_error() ";
-    $statmnt= &pdoquery_n_exec($sqlquery, $errormsg, $dbname);
-    $results=$statmnt->fetchAll();
-    return $results;
-}
 ?>
