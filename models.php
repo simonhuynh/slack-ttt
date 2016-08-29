@@ -288,7 +288,7 @@ class TTTGame {
 
     public function getWinner() {
         foreach ($this->players as $player) {
-            if ($this->playerWins($player) {
+            if ($this->playerWins($player)) {
                 $this->active = False;
                 return $player;
             }
