@@ -11,42 +11,42 @@ require_once 'constants.php';
 class BoardPrinter {
     # Singleton for converting board data to viewable text.
 
-    public $new_line = "\xA";
+    private $new_line = "\xA";
 
-    public $spacer = "\x20\x20";
-    public $empty_mark = "\x20";
+    private $spacer = "\x20\x20";
+    private $empty_mark = "\x20";
 
-    public $line_spacer = "--";
-    public $line_mark = "-";
+    private $line_spacer = "--";
+    private $line_mark = "-";
 
     public $board;
 
-    public function rowDelimiter() {
+    private function rowDelimiter() {
         # Formats border within a row.
 
         return $this->spacer . '|' . $this->spacer;
     }
 
-    public function spacerRow() {
+    private function spacerRow() {
         # Formats margin around player's mark, by row.
 
         return $this->spacer . $this->empty_mark . $this->spacer . $this->rowDelimiter() . $this->spacer . $this->empty_mark . $this->spacer . $this->rowDelimiter() . $this->spacer . $this->empty_mark . $this->space . $this->new_line;
     }
 
-    public function lineDelimiter() {
+    private function lineDelimiter() {
         # Formats intersection of board.
 
         return $this->line_spacer . '+' . $this->line_spacer;
     }
 
-    public function lineRow() {
+    private function lineRow() {
         # Formats horizontal lines of board.
 
         return $this->line_spacer . $this->line_mark . $this->line_spacer . $this->lineDelimiter() . $this->line_spacer . $this->line_mark . $this->line_spacer . $this->lineDelimiter() . $this->line_spacer . $this->line_mark . $this->line_spacer . $this->new_line;
 
     }
 
-    public function gameRow($row_idx) {
+    private function gameRow($row_idx) {
         # Formats players' marks on board.
 
         $row_start = $row_idx * 3;
@@ -63,15 +63,29 @@ class BoardPrinter {
 
 
 class TTTGame {
+    /*
+        The main service for game state, logic and persistence.
+
+        The *board is represented by a 9-position array.  Each position is filled by either a user_name 
+        or NULL to indicate an empty space.
+        
+        *players is an array of Player objects.  *current_player_idx indicates which of the two are to move next.
+
+        *active is a boolean, True for any game that has two players and has at least one potential victor;
+        otherwise False.
+    */
+
+
     private $EMPTY_BOARD = array(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
-    private $objectname = "TTTGame";
-    public $id = "NONE";
+    private $id = "NONE"; # the channel_id, used for persistence
+
     public $board;
 
     public $players = array();
-    public $current_player_idx = 0;
-    public $active = False;
+    private $current_player_idx = 0;
+
+    private $active = False;
 
 
     # DATA PERSISTENCE (mysql)
@@ -122,7 +136,11 @@ class TTTGame {
         return $this->dataPut();
     }
 
-    public function initBoard() {
+    public function gameIsActive() {
+        return $this->active;
+    }
+
+    private function initBoard() {
         $this->board = $this->EMPTY_BOARD;
         return $this;
     }
@@ -171,6 +189,7 @@ class TTTGame {
     }
 
     public function getInstructionBoard() {
+        # Used to populate the instructions and help screen.  The numbers indicate positional commands.
         return array(1,2,3,4,5,6,7,8,9);
     }
 
@@ -190,7 +209,7 @@ class TTTGame {
         }
     }
 
-    public function playerNameToMark($user_name) {
+    private function playerNameToMark($user_name) {
         if (!$user_name) return NULL;
         return $this->getPlayerByName($user_name)->mark;
     }
@@ -215,7 +234,7 @@ class TTTGame {
         }
     }
 
-    public function getWhoChallengedWhom() {
+    private function getWhoChallengedWhom() {
         # Reports the opening user invitation.
 
         foreach ($this->players as $player) {
@@ -247,7 +266,7 @@ class TTTGame {
 
     # GAME LOGIC
 
-    public function winsByRow($user_name, $board=NULL) {
+    private function winsByRow($user_name, $board=NULL) {
         $board = ($board ? $board : $this->board);
         for ($i = 0; $i < 3; $i+=3) {
             if ($board[$i] == $user_name && $board[$i+1] == $user_name && $board[$i+2] == $user_name) return True; 
@@ -255,7 +274,7 @@ class TTTGame {
         return False;
     }
 
-    public function winsByColumn($user_name, $board=NULL) {
+    private function winsByColumn($user_name, $board=NULL) {
         $board = ($board ? $board : $this->board);
         for ($i= 0; $i< 3; $i++) {
             if ($board[$i] == $user_name && $board[$i+3] == $user_name && $board[$i+6] == $user_name) return True;
@@ -263,7 +282,7 @@ class TTTGame {
         return False;
     }
 
-    public function winsByDiagonal($user_name, $board=NULL) {
+    private function winsByDiagonal($user_name, $board=NULL) {
         $board = ($board ? $board : $this->board);
         if ($board[4] == $user_name) {
             if ($board[0] == $user_name && $board[8] == $user_name) return True;
@@ -272,7 +291,7 @@ class TTTGame {
         return False;
     }
 
-    public function playerWins($player, $board=NULL) {
+    private function playerWins($player, $board=NULL) {
         $board = ($board ? $board : $this->board);
         if ($this->winsByRow($player->user_name, $board) || $this->winsByColumn($player->user_name, $board) || $this->winsByDiagonal($player->user_name, $board)) {
             return True;
@@ -280,7 +299,7 @@ class TTTGame {
         return False;
     }
 
-    public function checkForWinOrDraw() {
+    private function checkForWinOrDraw() {
         if ($this->boardIsEmpty()) return False;
         if ($this->getWinner()) $this->active = False;
         if (count(array_filter($this->board)) == 9) $this->active = False;
@@ -334,6 +353,5 @@ class SlackResponse {
     public $response_type = "ephemeral";
     public $text = '';
     public $attachments;
-
 }
 ?>
