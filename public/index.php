@@ -39,7 +39,7 @@ $response = new SlackResponse();
 
 if ($user_params[0] == HELP) {
     $board_printer->board = $ttt->getInstructionBoard();
-    $response->text = "```\xA" . $board_printer->getBoard() . PLAYER_TURN_INSTRUCTIONS . NEW_GAME_PROMPT;
+    $response->text = "```\xA" . $board_printer->getBoard() . PLAYER_TURN_INSTRUCTIONS . NEW_GAME_PROMPT . "```";
     print json_encode($response);
     exit();
 } elseif (!$ttt->active) {
