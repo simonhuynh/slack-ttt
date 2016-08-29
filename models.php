@@ -78,14 +78,14 @@ class TTTGame {
 
     private $EMPTY_BOARD = array(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
-    private $id = "NONE"; # the channel_id, used for persistence
+    public $id = "NONE"; # the channel_id, used for persistence
 
     public $board;
 
     public $players = array();
-    private $current_player_idx = 0;
+    public $current_player_idx = 0;
 
-    private $active = False;
+    public $active = False;
 
 
     # DATA PERSISTENCE (mysql)

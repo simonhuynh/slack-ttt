@@ -84,7 +84,7 @@ if ($user_params[0] === HELP) {
 $user_error = ($user_error ? "\xA\xA" . $user_error : '');
 
 $board_printer->board = (($ttt->boardIsEmpty() && !$ttt->gameIsActive()) ? $ttt->getInstructionBoard() : $ttt->getPrintableBoard());
-$response_text = "```\xA" . $ttt->getIntro() . $board_printer->getBoard() . "\xA" . $ttt->getStatus() . $warning . "```";
+$response_text = "```\xA" . $ttt->getIntro() . $board_printer->getBoard() . "\xA" . $ttt->getStatus() . $user_error . "```";
 $response->text = $response_text;
 print json_encode($response);
 ?>
