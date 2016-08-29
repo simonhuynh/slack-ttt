@@ -40,37 +40,48 @@ $user_error = '';
 
 # CONTROLLER
 
-if ($user_params[0] == HELP) {
+if ($user_params[0] === HELP) {
     # help command; print instructions
+
     $board_printer->board = $ttt->getInstructionBoard();
-    $response->text = "```\xA" . $board_printer->getBoard() . PLAYER_TURN_INSTRUCTIONS . NEW_GAME_PROMPT . "```";
+    $response->text = "```\xA" . WELCOME . "\xA\xA" . $board_printer->getBoard() . PLAYER_TURN_INSTRUCTIONS . NEW_GAME_PROMPT . "```";
     print json_encode($response);
     exit();
-} elseif (!$ttt->gameIsActive()) {
-    # no active game, user can start a new one; broadcast to channel
-    if ($user_params[0] == VS_COMMAND && $user_params[1]) {
-        $invitee = new Player($user_params[1], 'O');
-        $challenger = new Player($_POST['user_name'], 'X');
 
-        # coin flip for first move
-        if (rand(0, 99) >= 50) $ttt->startGame($invitee, $challenger);
-        else $ttt->startGame($challenger, $invitee);
+} elseif ($user_params[0] === VS_COMMAND) {
 
-        $ttt->saveGame();
-        $response->response_type = 'in_channel';
+    if ($ttt->gameIsActive()) {
+        # game is already going
+        $user_error .= "Please wait for this game to end before starting a new one";
+    } else {
+        if ($user_params[1]) {
+            # no active game, user can start a new one; broadcast to channel
+            $invitee = new Player($user_params[1], 'O');
+            $challenger = new Player($_POST['user_name'], 'X');
+
+            # coin flip for first move
+            if (rand(0, 99) >= 50) $ttt->startGame($invitee, $challenger);
+            else $ttt->startGame($challenger, $invitee);
+
+            $ttt->saveGame();
+            $response->response_type = 'in_channel';
+        } else $user_error .= "Please indicate a user to play against.";
     }
+
 } elseif ($ttt->userIsCurrentPlayer($username)) {
     # user can take turn; broadcast to channel
+
     $position = (int) $user_params[0];    
     if ($position) {
         $success = $ttt->playerTakesTurn($position - 1); # so as not to subject users to our array zero-start index
         if ($success) $response->response_type = 'in_channel';
         else $user_error .= INVALID_MOVE;
     }
+
 } # no else; default to not broadcasting and to showing status of most recent/current game
 
 # add margin if any warning text
-$warning = ($warning ? "\xA\xA" . $warning : '');
+$user_error = ($user_error ? "\xA\xA" . $user_error : '');
 
 $board_printer->board = (($ttt->boardIsEmpty() && !$ttt->gameIsActive()) ? $ttt->getInstructionBoard() : $ttt->getPrintableBoard());
 $response_text = "```\xA" . $ttt->getIntro() . $board_printer->getBoard() . "\xA" . $ttt->getStatus() . $warning . "```";

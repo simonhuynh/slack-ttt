@@ -253,7 +253,7 @@ class TTTGame {
         if (count($this->players)) {
             $text_out = ($this->boardIsEmpty() ? $this->getWhoChallengedWhom() : $this->players[0]->user_name . " vs " . $this->players[1]->user_name . "!");
         } else {
-            $text_out = "Welcome to Tic Tac Toe!";
+            $text_out = WELCOME;
         }
         return  $text_out . "\xA\xA";
     }
