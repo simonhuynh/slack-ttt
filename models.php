@@ -140,6 +140,7 @@ class TTTGame {
         if (($position >= 0) && ($position <= 8) && !$this->board[$position]) {
             $this->board[$position] = $this->players[$this->current_player_idx]->user_name;
             $this->checkForWinOrDraw();
+            $this->checkForStalemate();            
             $this->current_player_idx = !$this->current_player_idx;
             $this->saveGame();
             return True;
@@ -246,24 +247,35 @@ class TTTGame {
 
     # GAME LOGIC
 
-    public function winsByRow($user_name) {
+    public function winsByRow($user_name, $board=NULL) {
+        $board = ($board ? $board : $this->board);
         for ($i = 0; $i < 3; $i+=3) {
-            if ($this->board[$i] == $user_name && $this->board[$i+1] == $user_name && $this->board[$i+2] == $user_name) return True; 
+            if ($board[$i] == $user_name && $board[$i+1] == $user_name && $board[$i+2] == $user_name) return True; 
         }
         return False;
     }
 
-    public function winsByColumn($user_name) {
+    public function winsByColumn($user_name, $board=NULL) {
+        $board = ($board ? $board : $this->board);
         for ($i= 0; $i< 3; $i++) {
-            if ($this->board[$i] == $user_name && $this->board[$i+3] == $user_name && $this->board[$i+6] == $user_name) return True;
+            if ($board[$i] == $user_name && $board[$i+3] == $user_name && $board[$i+6] == $user_name) return True;
         }
         return False;
     }
 
-    public function winsByDiagonal($user_name) {
-        if ($this->board[4] == $user_name) {
-            if ($this->board[0] == $user_name && $this->board[8] == $user_name) return True;
-            if ($this->board[2] == $user_name && $this->board[6] == $user_name) return True;
+    public function winsByDiagonal($user_name, $board=NULL) {
+        $board = ($board ? $board : $this->board);
+        if ($board[4] == $user_name) {
+            if ($board[0] == $user_name && $board[8] == $user_name) return True;
+            if ($board[2] == $user_name && $board[6] == $user_name) return True;
+        }
+        return False;
+    }
+
+    public function playerWins($player, $board=NULL) {
+        $board = ($board ? $board : $this->board);
+        if ($this->winsByRow($player->user_name, $board) || $this->winsByColumn($player->user_name, $board) || $this->winsByDiagonal($player->user_name, $board)) {
+            return True;
         }
         return False;
     }
@@ -276,12 +288,32 @@ class TTTGame {
 
     public function getWinner() {
         foreach ($this->players as $player) {
-            if ($this->winsByRow($player->user_name) || $this->winsByColumn($player->user_name) || $this->winsByDiagonal($player->user_name)) {
+            if ($this->playerWins($player) {
                 $this->active = False;
                 return $player;
             }
         }
         return NULL;
+    }
+
+    private function fillEmptyPositionsWithPlayerMarks($user_name) {
+        $hypothetical_board = array();
+        foreach ($this->board as $position) $hypothetical_board[] = ($position ? $position : $user_name);
+        return $hypothetical_board;
+    }
+
+    private function playerCanWin($player) {
+        return $this->playerWins($player, $this->fillEmptyPositionsWithPlayerMarks($player->user_name));
+    }
+
+    private function checkForStalemate() {
+        foreach ($this->players as $player) {
+            if ($this->playerCanWin($player)) return False;
+        }
+
+        # cat's game!
+        $this->active = False;
+        return True;
     }
 
 } # end TTTGame
