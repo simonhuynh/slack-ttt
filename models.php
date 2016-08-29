@@ -5,6 +5,9 @@ Models for Slack Tic Tac Toe
 
 */
 
+require_once 'constants.php';
+
+
 class BoardPrinter {
     # Singleton for converting board data to viewable text.
 
@@ -198,19 +201,16 @@ class TTTGame {
     public function getStatus() {
         # Returns status string that prompts users to take their turn or begin a new game.
 
-        $NEW_GAME_PROMPT = "\xA\xAYou can start a new game by typing: /ttt vs [Slack user]";
-        $PLAYER_TURN_INSTRUCTIONS = "\xA\xAWhen it's your turn make your mark with: /ttt [position # from 1 to 9]";
-
         if ($this->active) {
             return "It's " . $this->players[$this->current_player_idx]->user_name . "'s turn!";
         } elseif ($this->boardIsEmpty()) {
-            return $NEW_GAME_PROMPT . $PLAYER_TURN_INSTRUCTIONS;            
+            return NEW_GAME_PROMPT . PLAYER_TURN_INSTRUCTIONS;
         } else {
             $text_out = '';
             $winner = $this->getWinner();
             if ($winner) $text_out .= $winner->user_name . " wins!";
             else $text_out .= "Cat's game."; # this is a brittle assumption that no winner, and a not empty board means a draw
-            $text_out .= $NEW_GAME_PROMPT;
+            $text_out .= NEW_GAME_PROMPT;
             return $text_out;
         }
     }

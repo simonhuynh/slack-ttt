@@ -16,11 +16,6 @@ Is username unique within a channel? If no, what is the expected behavior?
 Can a user play themeselves? If so, expected behavior?
 */
 
-
-# COMMANDS
-define("VS_COMMAND", "vs");
-
-
 require_once '../require.php';
 
 # MINIMAL VALIDATION
@@ -42,7 +37,12 @@ $board_printer = new BoardPrinter();
 
 $response = new SlackResponse();
 
-if (!$ttt->active) {
+if ($user_params[0] == HELP) {
+    $board_printer->board = $ttt->getInstructionBoard();
+    $response->text = "```\xA" . $board_printer->getBoard() . PLAYER_TURN_INSTRUCTIONS . NEW_GAME_PROMPT . "```";
+    print json_encode($response);
+    exit();
+} elseif (!$ttt->active) {
     # user can start a new game
     if ($user_params[0] == VS_COMMAND && $user_params[1]) {
         $player1 = new Player($user_params[1], 'O');
@@ -69,5 +69,4 @@ $response_text = "```\xA" . $ttt->getIntro() . $board_printer->getBoard() . "\xA
 $response->text = $response_text;
 
 print json_encode($response);
-
 ?>
