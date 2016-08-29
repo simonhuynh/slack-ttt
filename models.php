@@ -269,8 +269,9 @@ class TTTGame {
 
     private function winsByRow($user_name, $board=NULL) {
         $board = ($board ? $board : $this->board);
-        for ($i = 0; $i < 3; $i+=3) {
-            if ($board[$i] == $user_name && $board[$i+1] == $user_name && $board[$i+2] == $user_name) return True; 
+
+        for ($i = 0; $i < 3; $i++) {
+            if ($board[($i*3)] == $user_name && $board[($i*3)+1] == $user_name && $board[($i*3)+2] == $user_name) return True; 
         }
         return False;
     }
