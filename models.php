@@ -61,7 +61,6 @@ class BoardPrinter {
 
 class TTTGame {
     private $EMPTY_BOARD = array(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-    private $SAVE_PROPERTIES = ['id', 'board', 'players', 'current_player_idx', 'active'];
 
     private $objectname = "TTTGame";
     public $id = "NONE";
