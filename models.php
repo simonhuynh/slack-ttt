@@ -160,7 +160,8 @@ class TTTGame {
 
         if (($position >= 0) && ($position <= 8) && !$this->board[$position]) {
             $this->board[$position] = $this->players[$this->current_player_idx]->user_name;
-            $this->checkForWinOrDraw();
+            $this->checkForFilledBoard();
+            $this->checkForWin();
             $this->checkForStalemate();            
             $this->current_player_idx = !$this->current_player_idx;
             $this->saveGame();
@@ -299,16 +300,24 @@ class TTTGame {
         return False;
     }
 
-    private function checkForWinOrDraw() {
+    private function checkForFilledBoard() {
+        if (count(array_filter($this->board)) == 9) {
+            $this->active = False;
+            return True;
+        }
+    }
+
+    private function checkForWin() {
         if ($this->boardIsEmpty()) return False;
-        if ($this->getWinner()) $this->active = False;
-        if (count(array_filter($this->board)) == 9) $this->active = False;
+        if ($this->getWinner()) {
+            $this->active = False;
+            return True;
+        }
     }
 
     public function getWinner() {
         foreach ($this->players as $player) {
             if ($this->playerWins($player)) {
-                $this->active = False;
                 return $player;
             }
         }
@@ -326,8 +335,16 @@ class TTTGame {
     }
 
     private function checkForStalemate() {
-        foreach ($this->players as $player) {
-            if ($this->playerCanWin($player)) return False;
+        $empty_positions_remaining = 9 - count(array_filter($this->board)); # num of empty spots
+
+        if ($empty_positions_remaining > 1) {
+            # two or more spots left; check for both players
+            foreach ($this->players as $player) {
+                if ($this->playerCanWin($player)) return False;
+            }
+        } else {
+            # just check if the next player can win
+            if ($this->playerCanWin($this->players[!$this->current_player_idx])) return False;
         }
 
         # cat's game!
